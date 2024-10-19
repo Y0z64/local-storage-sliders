@@ -1,70 +1,86 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Slider from "@react-native-community/slider";
+import React, { useEffect, useState } from "react";
+import { Text, View, SafeAreaView } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const App = () => {
+  const [red, setRed] = useState(0);
+  const [green, setGreen] = useState(0);
+  const [blue, setBlue] = useState(0);
 
-export default function HomeScreen() {
+  useEffect(() => {
+    loadColor();
+  }, []);
+
+  useEffect(() => {
+    saveColor();
+  }, [red, green, blue]);
+
+  const loadColor = async () => {
+    try {
+      const savedRed = await AsyncStorage.getItem("@red");
+      const savedGreen = await AsyncStorage.getItem("@green");
+      const savedBlue = await AsyncStorage.getItem("@blue");
+      if (savedRed !== null) setRed(parseFloat(savedRed));
+      if (savedGreen !== null) setGreen(parseFloat(savedGreen));
+      if (savedBlue !== null) setBlue(parseFloat(savedBlue));
+    } catch (e) {
+      console.error("Failed to load color");
+    }
+  };
+
+  const saveColor = async () => {
+    try {
+      await AsyncStorage.setItem("@red", red.toString());
+      await AsyncStorage.setItem("@green", green.toString());
+      await AsyncStorage.setItem("@blue", blue.toString());
+    } catch (e) {
+      console.error("Failed to save color");
+    }
+  };
+
+  const backgroundColor = `rgb(${Math.round(red * 255)}, ${Math.round(
+    green * 255
+  )}, ${Math.round(blue * 255)})`;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView className="flex-1" style={{ backgroundColor }}>
+      <View className="flex-1 justify-center px-4">
+        <View className="bg-white/80 rounded-lg p-4">
+          <Text className="text-lg mb-2">Red: {Math.round(red * 255)}</Text>
+          <Slider
+            className="w-full h-10 mb-4"
+            minimumValue={0}
+            maximumValue={1}
+            value={red}
+            onValueChange={setRed}
+            minimumTrackTintColor="#ff0000"
+            thumbTintColor="#ff0000"
+          />
+          <Text className="text-lg mb-2">Green: {Math.round(green * 255)}</Text>
+          <Slider
+            className="w-full h-10 mb-4"
+            minimumValue={0}
+            maximumValue={1}
+            value={green}
+            onValueChange={setGreen}
+            minimumTrackTintColor="#00ff00"
+            thumbTintColor="#00ff00"
+          />
+          <Text className="text-lg mb-2">Blue: {Math.round(blue * 255)}</Text>
+          <Slider
+            className="w-full h-10 mb-4"
+            minimumValue={0}
+            maximumValue={1}
+            value={blue}
+            onValueChange={setBlue}
+            minimumTrackTintColor="#0000ff"
+            thumbTintColor="#0000ff"
+          />
+        </View>
+      </View>
+    </SafeAreaView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+export default App;
